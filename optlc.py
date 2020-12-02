@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: CP866 -*-
-# (c) Токарев С.А. 2009-2016
+# (c) Токарев С.А. 2009-2020
 # Программа для расчёта
 # параметров схем замещения линий 
 # - со стальными тросами
@@ -11,7 +11,7 @@ import sys
 import math
 import string
 
-VERSION = "1.0"
+VERSION = "1.1"
 
 if len(sys.argv) == 1 :
     print "OPTLC v." + VERSION, "(c) Токарев С.А."
@@ -213,7 +213,10 @@ for i in xrange(l):
         ROeq[i] = math.pow(ROeq[i] * math.pow( line[i]['a'], line[i]['n']-1), 1./line[i]['n'])
 
 for i in xrange(l, l+w):
-    ROeq[i] = wire[i-l]['d']/2000. / math.pow(10., wire[i-l]['x']/0.145)
+    if 'k' in wire[i-l]:
+        ROeq[i] = wire[i-l]['k'] * wire[i-l]['d'] / 2000.
+    else:
+        ROeq[i] = wire[i-l]['d']/2000. / math.pow(10., wire[i-l]['x']/0.145)
 
 
 
@@ -508,11 +511,14 @@ if w != 0 or r != 0:
     print "┌──────────────────────────────────────────────────────────────────────────────┐"
     print "│ Исходные параметры грозозащитных тросов                                      │"
     print "├─────┬─────┬─────┬─────┬─────┬────────────────────────────────────────────────┤"
-    print "│  r, │  x, │  d, │  l, │  f, │ Наименование                                   │"
+    print "│  r, │*k;x,│  d, │  l, │  f, │ Наименование                                   │"
     print "│Ом/км│Ом/км│  мм │  м  │  м  │                                                │"
     print "├─────┼─────┼─────┼─────┼─────┼────────────────────────────────────────────────┤"
     for i in xrange(w):
-        print "│%5.2f│%5.2f│%5.1f│%5.1f│%5.1f│ %-47s│" % (wire[i]['r'], wire[i]['x'], wire[i]['d'], wire[i]['l'], wire[i]['f'], "Трос № " + str(i+1))
+        if 'k' in wire[i]:
+            print "│%5.2f│*%4.2f│%5.1f│%5.1f│%5.1f│ %-47s│" % (wire[i]['r'], wire[i]['k'], wire[i]['d'], wire[i]['l'], wire[i]['f'], "Трос № " + str(i+1))
+        else:
+            print "│%5.2f│%5.2f│%5.1f│%5.1f│%5.1f│ %-47s│" % (wire[i]['r'], wire[i]['x'], wire[i]['d'], wire[i]['l'], wire[i]['f'], "Трос № " + str(i+1))
     for i in xrange(r):
         print "│  -  │  -  │%5.1f│%5.1f│%5.1f│ %-47s│" % (rope[i]['d'], rope[i]['l'], rope[i]['f'], "Трос № " + str(w+i+1))
     print "├─────┴─────┴─────┴─────┴─────┴────────────────────────────────────────────────┤"
